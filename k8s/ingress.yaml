@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-ai-agent-ingress
+  namespace: multi-ai-agent
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "multi-ai-agent-ip"
+    networking.gke.io/managed-certificates: "multi-ai-agent-cert"
+spec:
+  rules:
+    - host: chat.latun.store
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: multi-ai-agent-frontend
+                port:
+                  number: 8502
+
+    - host: dashboard.latun.store
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: multi-ai-agent-dashboard
+                port:
+                  number: 8503

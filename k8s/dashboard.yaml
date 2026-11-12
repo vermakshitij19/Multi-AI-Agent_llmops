@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-ai-agent-dashboard
+  namespace: multi-ai-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multi-ai-agent-dashboard
+  template:
+    metadata:
+      labels:
+        app: multi-ai-agent-dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: us-east1-docker.pkg.dev/devops-504813/multi-ai-agent/dashboard:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8503
+          env:
+            - name: BACKEND_URL
+              value: "http://multi-ai-agent-backend:9999"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8503
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8503
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-ai-agent-dashboard
+  namespace: multi-ai-agent
+spec:
+  type: ClusterIP
+  selector:
+    app: multi-ai-agent-dashboard
+  ports:
+    - port: 8503
+      targetPort: 8503

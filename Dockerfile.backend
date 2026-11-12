@@ -1,0 +1,26 @@
+
+FROM python:3.12-slim
+
+# Python runtime settings
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements-docker.txt .
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-docker.txt
+
+# Copy application source
+COPY app/ ./app/
+
+# Create directories for persistent data and logs
+RUN mkdir -p /app/data /app/logs
+
+# Backend listens on all interfaces
+EXPOSE 9999
+
+# Run FastAPI directly as the container's main process
+CMD ["uvicorn", "app.backend.api:app", "--host", "0.0.0.0", "--port", "9999"]

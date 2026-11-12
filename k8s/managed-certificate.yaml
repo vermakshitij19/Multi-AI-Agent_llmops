@@ -1,0 +1,9 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: multi-ai-agent-cert
+  namespace: multi-ai-agent
+spec:
+  domains:
+    - chat.latun.store
+    - dashboard.latun.store

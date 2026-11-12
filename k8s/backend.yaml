@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-ai-agent-backend
+  namespace: multi-ai-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multi-ai-agent-backend
+  template:
+    metadata:
+      labels:
+        app: multi-ai-agent-backend
+    spec:
+      containers:
+        - name: backend
+          image: us-east1-docker.pkg.dev/devops-504813/multi-ai-agent/backend:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9999
+          env:
+            - name: DATABASE_PATH
+              value: /data/evaluation_history.db
+          envFrom:
+            - secretRef:
+                name: multi-ai-agent-secrets
+          volumeMounts:
+            - name: evaluation-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9999
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9999
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+      volumes:
+        - name: evaluation-data
+          persistentVolumeClaim:
+            claimName: multi-ai-agent-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-ai-agent-backend
+  namespace: multi-ai-agent
+spec:
+  type: ClusterIP
+  selector:
+    app: multi-ai-agent-backend
+  ports:
+    - name: http
+      port: 9999
+      targetPort: 9999
