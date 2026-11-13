@@ -163,4 +163,20 @@ jobs:
           vuln-type: os,library
           severity: CRITICAL,HIGH
 
+  
+  # Security Gate 6: Terraform / IaC Scanning
+  checkov-iac:
+    name: Terraform Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout application repository
+        uses: actions/checkout@v5
+
+      - name: Check Terraform directory
+        run: |
+          echo "Terraform infrastructure is maintained in a separate repository."
+          echo "Checkov scanning will be enabled when infrastructure code is integrated."
+
+
 
