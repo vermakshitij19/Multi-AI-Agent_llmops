@@ -82,3 +82,85 @@ jobs:
         run: |
           bandit -r app/ -ll -f screen
 
+  
+  # Security Gate 4: Dockerfile Scanning
+  hadolint:
+    name: Dockerfile Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Run Hadolint
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "$PWD:/work" \
+            -w /work \
+            hadolint/hadolint:v2.12.0 \
+            Dockerfile.backend \
+            Dockerfile.frontend \
+            Dockerfile.dashboard
+ 
+  # Security Gate 5: Container Image Scanning
+  trivy-scan:
+    name: Trivy Container Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Build Backend Image
+        run: |
+          docker build \
+            -f Dockerfile.backend \
+            -t multi-ai-agent-backend:ci .
+
+      - name: Build Frontend Image
+        run: |
+          docker build \
+            -f Dockerfile.frontend \
+            -t multi-ai-agent-frontend:ci .
+
+      - name: Build Dashboard Image
+        run: |
+          docker build \
+            -f Dockerfile.dashboard \
+            -t multi-ai-agent-dashboard:ci .
+
+      - name: Scan Backend Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
+        with:
+          image-ref: multi-ai-agent-backend:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Scan Frontend Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
+        with:
+          image-ref: multi-ai-agent-frontend:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Scan Dashboard Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
+        with:
+          image-ref: multi-ai-agent-dashboard:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+
