@@ -1,4 +1,4 @@
-
+import sys
 from app.guardrails.input_guardrail import check_user_input
 
 
@@ -59,3 +59,5 @@ for test in test_cases:
 
 
 print(f"\nTest Results: {passed}/{len(test_cases)} passed")
+
+sys.exit(0 if passed == len(test_cases) else 1)
